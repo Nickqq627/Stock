@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>信貸投資動態模擬器 (含通膨計算)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>信貸投資動態模擬器 (RWD版)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -17,60 +17,165 @@
             --highlight: #00ff88;
             --inflation-color: #ff9f43;
         }
-        body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-main); padding: 20px; }
-        .container { max-width: 1100px; margin: auto; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { text-align: center; color: var(--text-color); margin-bottom: 30px; letter-spacing: 1px; }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .section { background: var(--accent-color); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); }
-        .section-title { font-size: 1em; color: var(--text-color); margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
-        
-        .input-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 5px; font-size: 0.85em; color: #888; }
-        input { width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 5px; color: white; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--text-color); }
 
-        .checkbox-group { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-top: 15px; font-size: 0.9em; }
-        .checkbox-group input { width: auto; }
+        /* 基礎樣式 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: --bg-color; 
+            background: var(--bg-color);
+            color: var(--text-main); 
+            margin: 0;
+            padding: 15px; 
+            line-height: 1.5;
+        }
 
-        button { width: 100%; padding: 15px; background: var(--text-color); color: #000; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold; margin-top: 10px; transition: 0.2s; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        .container { 
+            max-width: 1200px; 
+            margin: auto; 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
+        }
 
-        .chart-container { position: relative; height: 450px; width: 100%; margin-top: 30px; }
+        h1 { 
+            text-align: center; 
+            color: var(--text-color); 
+            font-size: 1.6rem;
+            margin-bottom: 25px; 
+            letter-spacing: 1px; 
+        }
+
+        /* 響應式網格：預設一欄 (手機)，電腦端才切換多欄 */
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+        }
+
+        @media (min-width: 992px) {
+            .grid { grid-template-columns: repeat(3, 1fr); }
+            h1 { font-size: 2.2rem; }
+            body { padding: 40px 20px; }
+            .container { padding: 40px; }
+        }
+
+        .section { 
+            background: var(--accent-color); 
+            padding: 18px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color); 
+        }
+
+        .section-title { 
+            font-size: 0.95em; 
+            color: var(--text-color); 
+            margin-bottom: 15px; 
+            font-weight: bold; 
+            border-left: 3px solid var(--text-color);
+            padding-left: 10px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-size: 0.85em; color: #aaa; }
         
-        .summary { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .stat-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; border: 1px solid var(--border-color); }
-        .stat-value { font-size: 1.3em; font-weight: bold; color: var(--highlight); margin-top: 5px; }
-        .stat-label { font-size: 0.75em; color: #888; text-transform: uppercase; }
+        /* 提升手機點擊感 */
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            background: var(--input-bg); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            color: white; 
+            box-sizing: border-box; 
+            font-size: 16px; /* 避免 iOS 自動放大 */
+            outline: none; 
+        }
+        input:focus { border-color: var(--text-color); background: #2d2d2d; }
+
+        .checkbox-group { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            font-size: 0.9em; 
+            padding: 10px 0;
+        }
+        .checkbox-group input { width: 20px; height: 20px; }
+
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            background: var(--text-color); 
+            color: #000; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 1.1em; 
+            font-weight: bold; 
+            margin-top: 10px; 
+            transition: all 0.2s; 
+        }
+        button:active { transform: scale(0.98); opacity: 0.8; }
+
+        /* 圖表區域 */
+        .chart-container { 
+            position: relative; 
+            height: 300px; 
+            width: 100%; 
+            margin-top: 30px; 
+        }
+        @media (min-width: 768px) { .chart-container { height: 450px; } }
+
+        /* 統計卡片 */
+        .summary { 
+            margin-top: 25px; 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 10px; 
+        }
+        @media (min-width: 768px) { .summary { grid-template-columns: repeat(4, 1fr); gap: 15px; } }
+
+        .stat-card { 
+            background: rgba(255,255,255,0.04); 
+            padding: 15px 10px; 
+            border-radius: 10px; 
+            text-align: center; 
+            border: 1px solid var(--border-color); 
+        }
+        .stat-value { font-size: 1.1em; font-weight: bold; color: var(--highlight); margin-top: 5px; word-break: break-all; }
+        .stat-label { font-size: 0.7em; color: #888; text-transform: uppercase; margin-bottom: 2px; }
         .stat-value.inflation { color: var(--inflation-color); }
-        
-        .info-note { margin-top: 15px; font-size: 0.8em; color: #666; text-align: center; }
+
+        .info-note { margin-top: 20px; font-size: 0.75em; color: #555; text-align: center; padding: 0 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>信貸投資動態模擬器 (含通膨影響)</h1>
+    <h1>信貸投資動態模擬器</h1>
     
     <div class="grid">
         <div class="section">
-            <div class="section-title">基礎資產</div>
+            <div class="section-title">基礎資產設定</div>
             <div class="input-group">
                 <label>初始自有資金 (NTD)</label>
-                <input type="number" id="principal" value="30000">
+                <input type="number" id="principal" value="500000">
             </div>
             <div class="input-group">
-                <label>每月可投入投資資金 (NTD)</label>
+                <label>每月投入資金 (NTD)</label>
                 <input type="number" id="monthlyInvest" value="30000">
             </div>
             <div class="input-group">
-                <label>預期投資年化報酬率 (%)</label>
-                <input type="number" id="investRate" value="9" step="0.1">
+                <label>年化報酬率 (%)</label>
+                <input type="number" id="investRate" value="8" step="0.1">
             </div>
         </div>
 
         <div class="section">
-            <div class="section-title">信貸與通膨</div>
+            <div class="section-title">信貸與通膨參數</div>
             <div class="input-group">
                 <label>信貸借款金額 (NTD)</label>
                 <input type="number" id="loanAmount" value="1000000">
@@ -80,13 +185,13 @@
                 <input type="number" id="loanRate" value="2.5" step="0.1">
             </div>
             <div class="input-group">
-                <label>預期年化通膨率 (%)</label>
+                <label>預期年通膨率 (%)</label>
                 <input type="number" id="inflationRate" value="2" step="0.1">
             </div>
         </div>
 
         <div class="section">
-            <div class="section-title">模擬範圍與邏輯</div>
+            <div class="section-title">模擬週期與邏輯</div>
             <div class="input-group">
                 <label>還款期限 (年)</label>
                 <input type="number" id="loanYears" value="7">
@@ -97,9 +202,9 @@
             </div>
             <label class="checkbox-group">
                 <input type="checkbox" id="deductFromMonthly" checked> 
-                <span>還款期內，從每月資金扣除還款額</span>
+                <span>從每月資金扣除還款</span>
             </label>
-            <button onclick="calculate()">更新模擬數據</button>
+            <button onclick="calculate()">執行模擬計算</button>
         </div>
     </div>
 
@@ -109,7 +214,7 @@
         <canvas id="investChart"></canvas>
     </div>
     
-    <p class="info-note">* 註：本模型假設信貸還清後，原還款支出將全數回流至定期定額投資中。不計開辦費。通膨淨資產為考量物價漲幅後的實質購買力。</p>
+    <p class="info-note">提示：手機用戶可橫屏觀看圖表細節。本工具計算包含月複利及還款後資金流回歸投資之邏輯。</p>
 </div>
 
 <script>
@@ -131,6 +236,7 @@ function calculate() {
     const totalMonths = totalYears * 12;
     const deductFromMonthly = document.getElementById('deductFromMonthly').checked;
 
+    // PMT公式
     const monthlyPayment = loanAmount * (loanRateMonthly * Math.pow(1 + loanRateMonthly, loanMonths)) / (Math.pow(1 + loanRateMonthly, loanMonths) - 1);
 
     let labels = [];
@@ -145,10 +251,7 @@ function calculate() {
     withLoanAssets.push(principal);
 
     for (let m = 1; m <= totalMonths; m++) {
-        // 1. 無信貸方案
         currentNoLoan = (currentNoLoan * (1 + investRateMonthly)) + monthlyInvest;
-
-        // 2. 有信貸方案
         currentWithLoanTotal = currentWithLoanTotal * (1 + investRateMonthly);
         
         let actualInputWithLoan = monthlyInvest;
@@ -169,7 +272,7 @@ function calculate() {
         currentWithLoanTotal += actualInputWithLoan;
 
         if (m % 12 === 0 || m === totalMonths) {
-            labels.push("第 " + (m/12) + " 年");
+            labels.push((m/12) + "Y");
             noLoanAssets.push(Math.round(currentNoLoan));
             withLoanAssets.push(Math.round(currentWithLoanTotal - currentRemainingDebt));
         }
@@ -187,20 +290,22 @@ function renderUI(labels, noLoanData, withLoanData, pmt, loanMonths, inflationRa
             labels: labels,
             datasets: [
                 {
-                    label: '無信貸 (純定期定額)',
+                    label: '無信貸',
                     data: noLoanData,
-                    borderColor: '#666',
-                    borderWidth: 2,
+                    borderColor: '#777',
+                    borderWidth: 1.5,
                     borderDash: [5, 5],
+                    pointRadius: 0,
                     fill: false,
                     tension: 0.3
                 },
                 {
-                    label: '有信貸 (淨資產)',
+                    label: '有信貸(淨)',
                     data: withLoanData,
                     borderColor: '#00d4ff',
                     backgroundColor: 'rgba(0, 212, 255, 0.1)',
                     borderWidth: 3,
+                    pointRadius: 2,
                     fill: true,
                     tension: 0.3
                 }
@@ -209,42 +314,37 @@ function renderUI(labels, noLoanData, withLoanData, pmt, loanMonths, inflationRa
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { labels: { color: '#ccc' } },
-                tooltip: { mode: 'index', intersect: false }
+                legend: { position: 'top', labels: { color: '#ccc', boxWidth: 12, font: { size: 11 } } }
             },
             scales: {
-                y: { grid: { color: '#333' }, ticks: { color: '#888' } },
-                x: { grid: { display: false }, ticks: { color: '#888' } }
+                y: { grid: { color: '#333' }, ticks: { color: '#888', font: { size: 10 } } },
+                x: { grid: { display: false }, ticks: { color: '#888', font: { size: 10 } } }
             }
         }
     });
 
-    const lastIdx = noLoanData.length - 1;
-    const finalNoLoan = noLoanData[lastIdx];
-    const finalWithLoan = withLoanData[lastIdx];
-    
-    // 計算通膨折現後的實質價值 (Real Value)
+    const finalNoLoan = noLoanData[noLoanData.length - 1];
+    const finalWithLoan = withLoanData[withLoanData.length - 1];
     const realWithLoan = finalWithLoan / Math.pow(1 + inflationRate, totalYears);
     const diff = finalWithLoan - finalNoLoan;
     
     document.getElementById('statSummary').innerHTML = `
         <div class="stat-card">
-            <div class="stat-label">每月還款金額</div>
+            <div class="stat-label">月還款額</div>
             <div class="stat-value" style="color:#ff4b2b">NT$ ${Math.round(pmt).toLocaleString()}</div>
-            <div style="font-size:10px; color:#666">還款期間 ${loanMonths} 個月</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">期末名目淨資產</div>
             <div class="stat-value">NT$ ${finalWithLoan.toLocaleString()}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">期末實質購買力 (考量通膨)</div>
+            <div class="stat-label">實質購買力(通膨)</div>
             <div class="stat-value inflation">NT$ ${Math.round(realWithLoan).toLocaleString()}</div>
-            <div style="font-size:10px; color:#888">折現年率 ${ (inflationRate*100).toFixed(1) }%</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">信貸創造額外價值</div>
+            <div class="stat-label">信貸額外價值</div>
             <div class="stat-value" style="color: ${diff >= 0 ? '#00ff88' : '#ff4b2b'}">NT$ ${diff.toLocaleString()}</div>
         </div>
     `;
