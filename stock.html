@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>信貸投資動態模擬器 (RWD版)</title>
+    <title>信貸投資動態模擬器 (千分位優化版)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -18,10 +18,8 @@
             --inflation-color: #ff9f43;
         }
 
-        /* 基礎樣式 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: --bg-color; 
             background: var(--bg-color);
             color: var(--text-main); 
             margin: 0;
@@ -43,10 +41,8 @@
             color: var(--text-color); 
             font-size: 1.6rem;
             margin-bottom: 25px; 
-            letter-spacing: 1px; 
         }
 
-        /* 響應式網格：預設一欄 (手機)，電腦端才切換多欄 */
         .grid { 
             display: grid; 
             grid-template-columns: 1fr; 
@@ -80,7 +76,6 @@
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-size: 0.85em; color: #aaa; }
         
-        /* 提升手機點擊感 */
         input { 
             width: 100%; 
             padding: 12px; 
@@ -89,7 +84,7 @@
             border-radius: 8px; 
             color: white; 
             box-sizing: border-box; 
-            font-size: 16px; /* 避免 iOS 自動放大 */
+            font-size: 16px; 
             outline: none; 
         }
         input:focus { border-color: var(--text-color); background: #2d2d2d; }
@@ -101,7 +96,6 @@
             cursor: pointer; 
             margin-top: 15px; 
             font-size: 0.9em; 
-            padding: 10px 0;
         }
         .checkbox-group input { width: 20px; height: 20px; }
 
@@ -116,11 +110,8 @@
             font-size: 1.1em; 
             font-weight: bold; 
             margin-top: 10px; 
-            transition: all 0.2s; 
         }
-        button:active { transform: scale(0.98); opacity: 0.8; }
 
-        /* 圖表區域 */
         .chart-container { 
             position: relative; 
             height: 300px; 
@@ -129,7 +120,6 @@
         }
         @media (min-width: 768px) { .chart-container { height: 450px; } }
 
-        /* 統計卡片 */
         .summary { 
             margin-top: 25px; 
             display: grid; 
@@ -146,10 +136,10 @@
             border: 1px solid var(--border-color); 
         }
         .stat-value { font-size: 1.1em; font-weight: bold; color: var(--highlight); margin-top: 5px; word-break: break-all; }
-        .stat-label { font-size: 0.7em; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+        .stat-label { font-size: 0.7em; color: #888; text-transform: uppercase; }
         .stat-value.inflation { color: var(--inflation-color); }
 
-        .info-note { margin-top: 20px; font-size: 0.75em; color: #555; text-align: center; padding: 0 10px; }
+        .info-note { margin-top: 20px; font-size: 0.75em; color: #555; text-align: center; }
     </style>
 </head>
 <body>
@@ -162,15 +152,15 @@
             <div class="section-title">基礎資產設定</div>
             <div class="input-group">
                 <label>初始自有資金 (NTD)</label>
-                <input type="number" id="principal" value="500000">
+                <input type="text" id="principal" value="30,000" class="comma-input">
             </div>
             <div class="input-group">
                 <label>每月投入資金 (NTD)</label>
-                <input type="number" id="monthlyInvest" value="30000">
+                <input type="text" id="monthlyInvest" value="30,000" class="comma-input">
             </div>
             <div class="input-group">
                 <label>年化報酬率 (%)</label>
-                <input type="number" id="investRate" value="8" step="0.1">
+                <input type="number" id="investRate" value="9" step="0.1">
             </div>
         </div>
 
@@ -178,7 +168,7 @@
             <div class="section-title">信貸與通膨參數</div>
             <div class="input-group">
                 <label>信貸借款金額 (NTD)</label>
-                <input type="number" id="loanAmount" value="1000000">
+                <input type="text" id="loanAmount" value="1,000,000" class="comma-input">
             </div>
             <div class="input-group">
                 <label>信貸年利率 (%)</label>
@@ -214,19 +204,40 @@
         <canvas id="investChart"></canvas>
     </div>
     
-    <p class="info-note">提示：手機用戶可橫屏觀看圖表細節。本工具計算包含月複利及還款後資金流回歸投資之邏輯。</p>
+    <p class="info-note">提示：輸入金額時會自動格式化為千分位。計算已包含月複利及實質購買力折現。</p>
 </div>
 
 <script>
 let myChart;
 
+// --- 輔助函式：格式化數字與解析數字 ---
+function formatNumber(n) {
+    return n.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function parseNumber(s) {
+    return parseFloat(s.replace(/,/g, "")) || 0;
+}
+
+// 監聽所有需要千分位的輸入框
+document.querySelectorAll('.comma-input').forEach(input => {
+    input.addEventListener('input', function(e) {
+        let cursorPosition = e.target.selectionStart;
+        let originalLength = e.target.value.length;
+        e.target.value = formatNumber(e.target.value);
+        let newLength = e.target.value.length;
+        e.target.setSelectionRange(cursorPosition + (newLength - originalLength), cursorPosition + (newLength - originalLength));
+    });
+});
+
 function calculate() {
-    const principal = parseFloat(document.getElementById('principal').value);
-    const monthlyInvest = parseFloat(document.getElementById('monthlyInvest').value);
+    // 使用 parseNumber 處理帶有逗號的字串
+    const principal = parseNumber(document.getElementById('principal').value);
+    const monthlyInvest = parseNumber(document.getElementById('monthlyInvest').value);
     const investRateYearly = parseFloat(document.getElementById('investRate').value) / 100;
     const investRateMonthly = investRateYearly / 12;
     
-    const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+    const loanAmount = parseNumber(document.getElementById('loanAmount').value);
     const loanRateYearly = parseFloat(document.getElementById('loanRate').value) / 100;
     const loanRateMonthly = loanRateYearly / 12;
     const loanMonths = parseInt(document.getElementById('loanYears').value) * 12;
@@ -236,7 +247,6 @@ function calculate() {
     const totalMonths = totalYears * 12;
     const deductFromMonthly = document.getElementById('deductFromMonthly').checked;
 
-    // PMT公式
     const monthlyPayment = loanAmount * (loanRateMonthly * Math.pow(1 + loanRateMonthly, loanMonths)) / (Math.pow(1 + loanRateMonthly, loanMonths) - 1);
 
     let labels = [];
@@ -316,11 +326,11 @@ function renderUI(labels, noLoanData, withLoanData, pmt, loanMonths, inflationRa
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { position: 'top', labels: { color: '#ccc', boxWidth: 12, font: { size: 11 } } }
+                legend: { position: 'top', labels: { color: '#ccc', boxWidth: 12 } }
             },
             scales: {
-                y: { grid: { color: '#333' }, ticks: { color: '#888', font: { size: 10 } } },
-                x: { grid: { display: false }, ticks: { color: '#888', font: { size: 10 } } }
+                y: { grid: { color: '#333' }, ticks: { color: '#888' } },
+                x: { grid: { display: false }, ticks: { color: '#888' } }
             }
         }
     });
@@ -350,6 +360,7 @@ function renderUI(labels, noLoanData, withLoanData, pmt, loanMonths, inflationRa
     `;
 }
 
+// 初始計算
 calculate();
 </script>
 
