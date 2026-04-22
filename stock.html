@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>信貸投資動態模擬器 (千分位優化版)</title>
+    <title>信貸投資動態模擬器 (排版優化版)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -23,15 +23,15 @@
             background: var(--bg-color);
             color: var(--text-main); 
             margin: 0;
-            padding: 15px; 
-            line-height: 1.5;
+            padding: 12px; 
+            line-height: 1.4;
         }
 
         .container { 
             max-width: 1200px; 
             margin: auto; 
             background: var(--card-bg); 
-            padding: 20px; 
+            padding: 15px; 
             border-radius: 16px; 
             box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
         }
@@ -39,46 +39,46 @@
         h1 { 
             text-align: center; 
             color: var(--text-color); 
-            font-size: 1.6rem;
-            margin-bottom: 25px; 
+            font-size: 1.4rem;
+            margin-bottom: 20px; 
         }
 
         .grid { 
             display: grid; 
             grid-template-columns: 1fr; 
-            gap: 15px; 
-            margin-bottom: 25px; 
+            gap: 12px; 
+            margin-bottom: 20px; 
         }
 
         @media (min-width: 992px) {
             .grid { grid-template-columns: repeat(3, 1fr); }
-            h1 { font-size: 2.2rem; }
-            body { padding: 40px 20px; }
-            .container { padding: 40px; }
+            h1 { font-size: 2rem; }
+            body { padding: 30px 20px; }
+            .container { padding: 30px; }
         }
 
         .section { 
             background: var(--accent-color); 
-            padding: 18px; 
+            padding: 15px; 
             border-radius: 12px; 
             border: 1px solid var(--border-color); 
         }
 
         .section-title { 
-            font-size: 0.95em; 
+            font-size: 0.9em; 
             color: var(--text-color); 
-            margin-bottom: 15px; 
+            margin-bottom: 12px; 
             font-weight: bold; 
             border-left: 3px solid var(--text-color);
             padding-left: 10px;
         }
 
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-size: 0.85em; color: #aaa; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-size: 0.8em; color: #888; }
         
         input { 
             width: 100%; 
-            padding: 12px; 
+            padding: 10px; 
             background: var(--input-bg); 
             border: 1px solid var(--border-color); 
             border-radius: 8px; 
@@ -87,59 +87,79 @@
             font-size: 16px; 
             outline: none; 
         }
-        input:focus { border-color: var(--text-color); background: #2d2d2d; }
 
         .checkbox-group { 
             display: flex; 
             align-items: center; 
-            gap: 12px; 
+            gap: 10px; 
             cursor: pointer; 
-            margin-top: 15px; 
-            font-size: 0.9em; 
+            font-size: 0.85em; 
         }
-        .checkbox-group input { width: 20px; height: 20px; }
+        .checkbox-group input { width: 18px; height: 18px; margin: 0; }
 
         button { 
             width: 100%; 
-            padding: 16px; 
+            padding: 14px; 
             background: var(--text-color); 
             color: #000; 
             border: none; 
             border-radius: 10px; 
             cursor: pointer; 
-            font-size: 1.1em; 
+            font-size: 1.05em; 
             font-weight: bold; 
-            margin-top: 10px; 
+            margin-top: 5px; 
         }
 
         .chart-container { 
             position: relative; 
-            height: 300px; 
+            height: 280px; 
             width: 100%; 
-            margin-top: 30px; 
-        }
-        @media (min-width: 768px) { .chart-container { height: 450px; } }
-
-        .summary { 
             margin-top: 25px; 
+        }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+
+        /* --- 修正金額換行的核心樣式 --- */
+        .summary { 
+            margin-top: 20px; 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
-            gap: 10px; 
+            gap: 8px; 
         }
-        @media (min-width: 768px) { .summary { grid-template-columns: repeat(4, 1fr); gap: 15px; } }
+        @media (min-width: 768px) { .summary { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
 
         .stat-card { 
             background: rgba(255,255,255,0.04); 
-            padding: 15px 10px; 
+            padding: 12px 6px; 
             border-radius: 10px; 
             text-align: center; 
             border: 1px solid var(--border-color); 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden; /* 防止溢出 */
         }
-        .stat-value { font-size: 1.1em; font-weight: bold; color: var(--highlight); margin-top: 5px; word-break: break-all; }
-        .stat-label { font-size: 0.7em; color: #888; text-transform: uppercase; }
+
+        .stat-label { 
+            font-size: 0.7rem; 
+            color: #888; 
+            margin-bottom: 4px; 
+            white-space: nowrap; 
+        }
+
+        .stat-value { 
+            /* 關鍵：使用 clamp 根據螢幕大小動態縮放字體，並強制不換行 */
+            font-size: clamp(0.85rem, 3.5vw, 1.2rem); 
+            font-weight: bold; 
+            color: var(--highlight); 
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis; /* 如果真的太長則顯示省略號 */
+        }
+        
+        .stat-value.red { color: #ff4b2b; }
         .stat-value.inflation { color: var(--inflation-color); }
 
-        .info-note { margin-top: 20px; font-size: 0.75em; color: #555; text-align: center; }
+        .info-note { margin-top: 15px; font-size: 0.7rem; color: #555; text-align: center; }
     </style>
 </head>
 <body>
@@ -149,7 +169,7 @@
     
     <div class="grid">
         <div class="section">
-            <div class="section-title">基礎資產設定</div>
+            <div class="section-title">基礎資產</div>
             <div class="input-group">
                 <label>初始自有資金 (NTD)</label>
                 <input type="text" id="principal" value="30,000" class="comma-input">
@@ -165,7 +185,7 @@
         </div>
 
         <div class="section">
-            <div class="section-title">信貸與通膨參數</div>
+            <div class="section-title">信貸與通膨</div>
             <div class="input-group">
                 <label>信貸借款金額 (NTD)</label>
                 <input type="text" id="loanAmount" value="1,000,000" class="comma-input">
@@ -181,7 +201,7 @@
         </div>
 
         <div class="section">
-            <div class="section-title">模擬週期與邏輯</div>
+            <div class="section-title">週期邏輯</div>
             <div class="input-group">
                 <label>還款期限 (年)</label>
                 <input type="number" id="loanYears" value="7">
@@ -194,7 +214,7 @@
                 <input type="checkbox" id="deductFromMonthly" checked> 
                 <span>從每月資金扣除還款</span>
             </label>
-            <button onclick="calculate()">執行模擬計算</button>
+            <button onclick="calculate()">執行模擬</button>
         </div>
     </div>
 
@@ -204,13 +224,12 @@
         <canvas id="investChart"></canvas>
     </div>
     
-    <p class="info-note">提示：輸入金額時會自動格式化為千分位。計算已包含月複利及實質購買力折現。</p>
+    <p class="info-note">提示：長按圖表可看詳細數值。實質購買力已考慮通膨折現。</p>
 </div>
 
 <script>
 let myChart;
 
-// --- 輔助函式：格式化數字與解析數字 ---
 function formatNumber(n) {
     return n.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -219,7 +238,6 @@ function parseNumber(s) {
     return parseFloat(s.replace(/,/g, "")) || 0;
 }
 
-// 監聽所有需要千分位的輸入框
 document.querySelectorAll('.comma-input').forEach(input => {
     input.addEventListener('input', function(e) {
         let cursorPosition = e.target.selectionStart;
@@ -231,7 +249,6 @@ document.querySelectorAll('.comma-input').forEach(input => {
 });
 
 function calculate() {
-    // 使用 parseNumber 處理帶有逗號的字串
     const principal = parseNumber(document.getElementById('principal').value);
     const monthlyInvest = parseNumber(document.getElementById('monthlyInvest').value);
     const investRateYearly = parseFloat(document.getElementById('investRate').value) / 100;
@@ -288,10 +305,10 @@ function calculate() {
         }
     }
 
-    renderUI(labels, noLoanAssets, withLoanAssets, monthlyPayment, loanMonths, inflationRateYearly, totalYears);
+    renderUI(labels, noLoanAssets, withLoanAssets, monthlyPayment, totalYears, inflationRateYearly);
 }
 
-function renderUI(labels, noLoanData, withLoanData, pmt, loanMonths, inflationRate, totalYears) {
+function renderUI(labels, noLoanData, withLoanData, pmt, totalYears, inflationRate) {
     const ctx = document.getElementById('investChart').getContext('2d');
     if (myChart) myChart.destroy();
     myChart = new Chart(ctx, {
@@ -306,16 +323,15 @@ function renderUI(labels, noLoanData, withLoanData, pmt, loanMonths, inflationRa
                     borderWidth: 1.5,
                     borderDash: [5, 5],
                     pointRadius: 0,
-                    fill: false,
                     tension: 0.3
                 },
                 {
-                    label: '有信貸(淨)',
+                    label: '有信貸',
                     data: withLoanData,
                     borderColor: '#00d4ff',
                     backgroundColor: 'rgba(0, 212, 255, 0.1)',
                     borderWidth: 3,
-                    pointRadius: 2,
+                    pointRadius: 1,
                     fill: true,
                     tension: 0.3
                 }
@@ -326,11 +342,11 @@ function renderUI(labels, noLoanData, withLoanData, pmt, loanMonths, inflationRa
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { position: 'top', labels: { color: '#ccc', boxWidth: 12 } }
+                legend: { position: 'top', labels: { color: '#ccc', boxWidth: 10, font: { size: 10 } } }
             },
             scales: {
-                y: { grid: { color: '#333' }, ticks: { color: '#888' } },
-                x: { grid: { display: false }, ticks: { color: '#888' } }
+                y: { grid: { color: '#333' }, ticks: { color: '#888', font: { size: 9 } } },
+                x: { grid: { display: false }, ticks: { color: '#888', font: { size: 9 } } }
             }
         }
     });
@@ -343,24 +359,23 @@ function renderUI(labels, noLoanData, withLoanData, pmt, loanMonths, inflationRa
     document.getElementById('statSummary').innerHTML = `
         <div class="stat-card">
             <div class="stat-label">月還款額</div>
-            <div class="stat-value" style="color:#ff4b2b">NT$ ${Math.round(pmt).toLocaleString()}</div>
+            <div class="stat-value red">NT$${Math.round(pmt).toLocaleString()}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">期末名目淨資產</div>
-            <div class="stat-value">NT$ ${finalWithLoan.toLocaleString()}</div>
+            <div class="stat-label">名目淨資產</div>
+            <div class="stat-value">NT$${finalWithLoan.toLocaleString()}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">實質購買力(通膨)</div>
-            <div class="stat-value inflation">NT$ ${Math.round(realWithLoan).toLocaleString()}</div>
+            <div class="stat-label">實質購買力</div>
+            <div class="stat-value inflation">NT$${Math.round(realWithLoan).toLocaleString()}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">信貸額外價值</div>
-            <div class="stat-value" style="color: ${diff >= 0 ? '#00ff88' : '#ff4b2b'}">NT$ ${diff.toLocaleString()}</div>
+            <div class="stat-label">額外價值</div>
+            <div class="stat-value" style="color:${diff >= 0 ? '#00ff88' : '#ff4b2b'}">NT$${diff.toLocaleString()}</div>
         </div>
     `;
 }
 
-// 初始計算
 calculate();
 </script>
 
